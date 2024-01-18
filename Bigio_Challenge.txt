@@ -1,0 +1,94 @@
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import time
+
+class FacebookAutomation:
+    def __init__(self):
+        self.driver = webdriver.Chrome()
+
+    def register_new_user(self, full_name, email_or_phone, password):
+        self.driver.get("https://www.facebook.com/")
+        
+        # Pendaftaran Pengguna Baru
+        self.driver.find_element_by_name("firstname").send_keys(full_name)
+        self.driver.find_element_by_name("reg_email__").send_keys(email_or_phone)
+        self.driver.find_element_by_name("reg_passwd__").send_keys(password)
+        self.driver.find_element_by_name("websubmit").click()
+
+        # Verifikasi email atau nomor telepon
+        time.sleep(5)  # Tunggu beberapa detik untuk verifikasi 
+
+    def login(self, email_or_phone, password):
+        # Proses Login
+        self.driver.get("https://www.facebook.com/")
+        self.driver.find_element_by_name("email").send_keys(email_or_phone)
+        self.driver.find_element_by_name("pass").send_keys(password)
+        self.driver.find_element_by_name("login").click()
+
+        # Verifikasi bahwa login berhasil
+        assert "facebook.com" in self.driver.current_url, "Login failed"
+
+    def logout(self):
+        # Proses Logout
+        self.driver.find_element_by_id("userNavigationLabel").click()
+        self.driver.find_element_by_partial_link_text("Log Out").click()
+
+        # Verifikasi bahwa logout berhasil
+        assert "facebook.com" in self.driver.current_url, "Logout failed"
+
+    def change_password(self, current_password, new_password):
+        # Perubahan Kata Sandi
+        self.driver.find_element_by_id("userNavigationLabel").click()
+        self.driver.find_element_by_partial_link_text("Settings").click()
+        self.driver.find_element_by_partial_link_text("Password").click()
+
+        # Memasukkan kata sandi lama dan yang baru
+        self.driver.find_element_by_name("oldpassword").send_keys(current_password)
+        self.driver.find_element_by_name("newpassword").send_keys(new_password)
+        self.driver.find_element_by_name("confirmed_password").send_keys(new_password)
+        self.driver.find_element_by_name("save").click()
+
+        # Verifikasi bahwa perubahan kata sandi berhasil
+        assert "facebook.com" in self.driver.current_url, "Password change failed"
+
+    def manage_sessions(self):
+        # Manajemen Sesi Pengguna
+        self.driver.find_element_by_id("userNavigationLabel").click()
+        self.driver.find_element_by_partial_link_text("Settings").click()
+        self.driver.find_element_by_partial_link_text("Security and Login").click()
+
+        # Mendapatkan daftar sesi aktif
+        active_sessions = self.driver.find_elements_by_css_selector(".fbSettingsListRow .item span")
+
+        # Menutup sesi dari perangkat tertentu (hanya untuk tujuan demonstrasi)
+        if len(active_sessions) > 1:
+            session_to_close = active_sessions[1].text
+            self.driver.find_element_by_xpath(f"//span[text()='{session_to_close}']/ancestor::div[1]/following-sibling::div[1]//a[text()='Log Out']").click()
+
+        # Verifikasi bahwa manajemen sesi berhasil
+        assert "facebook.com" in self.driver.current_url, "Session management failed"
+
+    def close_browser(self):
+        self.driver.quit()
+
+# Penggunaan contoh
+if __name__ == "__main__":
+    facebook_automation = FacebookAutomation()
+
+    # Pendaftaran Pengguna Baru
+    facebook_automation.register_new_user("Your Name", "your_email_or_phone", "your_password")
+
+    # Proses Login
+    facebook_automation.login("your_email_or_phone", "your_password")
+
+    # Proses Logout
+    facebook_automation.logout()
+
+    # Perubahan Kata Sandi
+    facebook_automation.change_password("current_password", "new_password")
+
+    # Manajemen Sesi Pengguna
+    facebook_automation.manage_sessions()
+
+    # Menutup browser
+    facebook_automation.close_browser()
